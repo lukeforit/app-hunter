@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState, useMemo, useRef } from 'react';
 import { Briefcase, Search, Plus, Download, Upload, Layers, X, Sparkles } from 'lucide-react';
 import { useJobs } from './hooks/useJobs';
 import { JobCard } from './features/job-tracker/components/JobCard';
@@ -12,6 +13,7 @@ const App: React.FC = () => {
   const [isCompact, setIsCompact] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredJobs = useMemo(() => {
     return jobs.filter(j => 
@@ -28,6 +30,7 @@ const App: React.FC = () => {
     a.href = url;
     a.download = `hunts-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,10 +40,19 @@ const App: React.FC = () => {
     reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target?.result as string);
-        if (Array.isArray(data)) importJobs(data);
-      } catch (err) { alert('Invalid format'); }
+        if (Array.isArray(data)) {
+          importJobs(data);
+          alert('Hunts imported successfully!');
+        } else {
+          throw new Error('Invalid format');
+        }
+      } catch (err) { 
+        alert('Invalid file format. Please provide a valid JSON array of job entries.'); 
+      }
     };
     reader.readAsText(file);
+    // Reset value to allow selecting same file again
+    e.target.value = '';
   };
 
   return (
@@ -59,16 +71,26 @@ const App: React.FC = () => {
             {isCompact ? 'Comfortable' : 'Compact'}
           </Button>
           <div className="h-4 w-px bg-zinc-800 mx-2" />
-          <Button variant="ghost" size="icon" onClick={handleExport} title="Export">
+          <Button variant="ghost" size="icon" onClick={handleExport} title="Export Hunts">
             <Download className="w-5 h-5" />
           </Button>
-          <label className="cursor-pointer">
-            {/* FIX: Removed 'asChild' prop as it is not supported by the custom Button component */}
-            <Button variant="ghost" size="icon" title="Import" type="button">
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              title="Import Hunts" 
+              onClick={() => fileInputRef.current?.click()}
+            >
                <Upload className="w-5 h-5" />
             </Button>
-            <input type="file" className="hidden" accept=".json" onChange={handleImport} />
-          </label>
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              className="hidden" 
+              accept=".json" 
+              onChange={handleImport} 
+            />
+          </div>
         </div>
       </nav>
 
@@ -81,7 +103,7 @@ const App: React.FC = () => {
               placeholder="Search hunts..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-900/40 border border-zinc-800 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-600"
+              className="w-full bg-zinc-900/40 border border-zinc-800 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-all"
             />
           </div>
           <Button onClick={() => setIsAdding(true)} className="w-full md:w-auto gap-2">
@@ -101,7 +123,6 @@ const App: React.FC = () => {
                 compact={isCompact}
                 onEdit={setEditingJob}
                 onDelete={deleteJob}
-                /* FIX: Wrapped updateJob to match the (id, status) signature expected by JobCard */
                 onStatusChange={(id, status) => updateJob(id, { status })}
               />
             ))}
