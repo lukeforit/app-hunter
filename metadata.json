@@ -1,0 +1,5 @@
+{
+  "name": "The Hunter - Job Tracker",
+  "description": "A lightweight, high-performance job application tracker with AI-powered 'Magic Paste' parsing and local-first storage.",
+  "requestFramePermissions": []
+}
