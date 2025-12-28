@@ -1,11 +1,13 @@
-
 import React, { useState, useMemo, useRef } from 'react';
-import { Briefcase, Search, Plus, Download, Upload, Layers, X, Sparkles } from 'lucide-react';
+import { Briefcase, Search, Plus, Download, Upload, Layers, X } from 'lucide-react';
 import { useJobs } from './hooks/useJobs';
 import { JobCard } from './features/job-tracker/components/JobCard';
 import { MagicPaste } from './features/job-tracker/components/MagicPaste';
+import { EmptyState } from './features/job-tracker/components/EmptyState';
+import { JobForm } from './features/job-tracker/components/JobForm';
 import { Button } from './components/ui/Button';
-import { JobEntry, JobStatus, WorkMode } from './types';
+import { Modal } from './components/ui/Modal';
+import { JobEntry } from './types';
 
 const App: React.FC = () => {
   const { jobs, addJob, updateJob, deleteJob, importJobs } = useJobs();
@@ -159,75 +161,5 @@ const App: React.FC = () => {
     </div>
   );
 };
-
-const Modal = ({ children, onClose }: { children: React.ReactNode, onClose: () => void }) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm" onClick={onClose} />
-    <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 overflow-hidden animate-in fade-in zoom-in duration-200">
-      {children}
-    </div>
-  </div>
-);
-
-const EmptyState = () => (
-  <div className="flex flex-col items-center justify-center py-32 text-center border-2 border-dashed border-zinc-800 rounded-3xl space-y-4">
-    <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-800">
-      <Sparkles className="w-8 h-8 text-zinc-600" />
-    </div>
-    <div>
-      <h3 className="text-lg font-semibold">Your hunt is quiet...</h3>
-      <p className="text-zinc-500 text-sm max-w-xs mx-auto">Use Magic Paste to automatically track your next big move.</p>
-    </div>
-  </div>
-);
-
-const JobForm = ({ initialData, onSubmit }: { initialData?: JobEntry | null, onSubmit: (data: Partial<JobEntry>) => void }) => {
-  const [data, setData] = useState(initialData || {
-    companyName: '',
-    role: '',
-    location: '',
-    workMode: WorkMode.REMOTE,
-    link: '',
-    status: JobStatus.SENT,
-    dateApplied: new Date().toISOString().split('T')[0],
-    salary: ''
-  });
-
-  return (
-    <form className="grid grid-cols-2 gap-4" onSubmit={(e) => { e.preventDefault(); onSubmit(data); }}>
-      <div className="col-span-2 space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Role</label>
-        <input required value={data.role} onChange={e => setData({...data, role: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none" placeholder="Frontend Engineer" />
-      </div>
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Company</label>
-        <input required value={data.companyName} onChange={e => setData({...data, companyName: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none" placeholder="Linear" />
-      </div>
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Location</label>
-        <input value={data.location} onChange={e => setData({...data, location: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none" placeholder="Remote" />
-      </div>
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Salary (Max)</label>
-        <input value={data.salary} onChange={e => setData({...data, salary: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none" placeholder="$150,000" />
-      </div>
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Mode</label>
-        <select value={data.workMode} onChange={e => setData({...data, workMode: e.target.value as WorkMode})} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none">
-          {Object.values(WorkMode).map(m => <option key={m} value={m}>{m}</option>)}
-        </select>
-      </div>
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Date</label>
-        <input type="date" value={data.dateApplied} onChange={e => setData({...data, dateApplied: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none" />
-      </div>
-      <div className="col-span-2 space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Link</label>
-        <input type="url" value={data.link} onChange={e => setData({...data, link: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none" placeholder="https://..." />
-      </div>
-      <Button type="submit" className="col-span-2 py-3 mt-2">{initialData ? 'Update' : 'Save'} Hunt</Button>
-    </form>
-  );
-}
 
 export default App;
