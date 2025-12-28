@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef } from 'react';
 import { Briefcase, Search, Plus, Download, Upload, Layers, X } from 'lucide-react';
 import { useJobs } from './hooks/useJobs';
@@ -8,6 +9,7 @@ import { JobForm } from './features/job-tracker/components/JobForm';
 import { Button } from './components/ui/Button';
 import { Modal } from './components/ui/Modal';
 import { JobEntry } from './types';
+import { exportJobs, importJobsFromFile } from './lib/file-utils';
 
 const App: React.FC = () => {
   const { jobs, addJob, updateJob, deleteJob, importJobs } = useJobs();
@@ -25,38 +27,6 @@ const App: React.FC = () => {
     );
   }, [jobs, searchQuery]);
 
-  const handleExport = () => {
-    const blob = new Blob([JSON.stringify(jobs, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `hunts-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target?.result as string);
-        if (Array.isArray(data)) {
-          importJobs(data);
-          alert('Hunts imported successfully!');
-        } else {
-          throw new Error('Invalid format');
-        }
-      } catch (err) { 
-        alert('Invalid file format. Please provide a valid JSON array of job entries.'); 
-      }
-    };
-    reader.readAsText(file);
-    // Reset value to allow selecting same file again
-    e.target.value = '';
-  };
-
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-zinc-700">
       <nav className="sticky top-0 z-50 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md px-6 py-4 flex items-center justify-between">
@@ -73,7 +43,7 @@ const App: React.FC = () => {
             {isCompact ? 'Comfortable' : 'Compact'}
           </Button>
           <div className="h-4 w-px bg-zinc-800 mx-2" />
-          <Button variant="ghost" size="icon" onClick={handleExport} title="Export Hunts">
+          <Button variant="ghost" size="icon" onClick={() => exportJobs(jobs)} title="Export Hunts">
             <Download className="w-5 h-5" />
           </Button>
           <div className="flex items-center">
@@ -90,7 +60,7 @@ const App: React.FC = () => {
               ref={fileInputRef}
               className="hidden" 
               accept=".json" 
-              onChange={handleImport} 
+              onChange={(e) => importJobsFromFile(e, importJobs)} 
             />
           </div>
         </div>
