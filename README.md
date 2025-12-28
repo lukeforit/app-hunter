@@ -1,10 +1,11 @@
+
 # 🎯 The Hunter | Job Tracker
 
 **The Hunter** is a lightweight job application tracker designed for engineers who value speed and data privacy. It features a "no-backend" architecture, keeping all your data in your browser's local storage with seamless AI-powered parsing.
 
 ## 🚀 Key Features
 
-- **✨ Magic Paste (AI Parser):** Paste a job URL or full job description, and the built-in Gemini AI will automatically extract the company, role, location, and work mode.
+- **✨ Magic Paste (AI Parser):** Paste a job URL or full job description, and the built-in Gemini AI will automatically extract the company, role, location, salary, and work mode.
 - **📋 Visual Dashboard:** A clean, "Linear-style" interface to track your applications with color-coded status badges.
 - **🌓 Dark Mode by Default:** Optimized for late-night job hunting with a professional zinc/neutral aesthetic.
 - **📂 Data Portability:** Export your entire hunt history as a `JSON` file or import an existing one to switch devices.
@@ -34,6 +35,7 @@ Each job entry follows this structure:
   "companyName": "string",
   "role": "string",
   "location": "string",
+  "salary": "string (e.g. $150,000)",
   "workMode": "On-site | Remote | Hybrid",
   "dateApplied": "YYYY-MM-DD",
   "link": "string (URL)",

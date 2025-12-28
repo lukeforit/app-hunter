@@ -189,7 +189,8 @@ const JobForm = ({ initialData, onSubmit }: { initialData?: JobEntry | null, onS
     workMode: WorkMode.REMOTE,
     link: '',
     status: JobStatus.SENT,
-    dateApplied: new Date().toISOString().split('T')[0]
+    dateApplied: new Date().toISOString().split('T')[0],
+    salary: ''
   });
 
   return (
@@ -205,6 +206,10 @@ const JobForm = ({ initialData, onSubmit }: { initialData?: JobEntry | null, onS
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold text-zinc-500 uppercase">Location</label>
         <input value={data.location} onChange={e => setData({...data, location: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none" placeholder="Remote" />
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-bold text-zinc-500 uppercase">Salary (Max)</label>
+        <input value={data.salary} onChange={e => setData({...data, salary: e.target.value})} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none" placeholder="$150,000" />
       </div>
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold text-zinc-500 uppercase">Mode</label>

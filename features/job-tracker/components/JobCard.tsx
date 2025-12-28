@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, Calendar, ExternalLink, Trash2, Settings2 } from 'lucide-react';
+import { MapPin, Calendar, ExternalLink, Trash2, Settings2, Banknote } from 'lucide-react';
 import { JobEntry, JobStatus } from '../../../types';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
@@ -36,6 +36,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete
               <MapPin className="w-3 h-3" />
               {job.location} • {job.workMode}
             </div>
+            {job.salary && (
+              <div className="flex items-center gap-1.5 text-emerald-500/90">
+                <Banknote className="w-3 h-3" />
+                {job.salary}
+              </div>
+            )}
             <div className="flex items-center gap-1.5">
               <Calendar className="w-3 h-3" />
               {formatDate(job.dateApplied)}

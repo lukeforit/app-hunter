@@ -20,6 +20,7 @@ export interface JobEntry {
   dateApplied: string;
   link: string;
   status: JobStatus;
+  salary?: string;
 }
 
 export interface AIJobExtraction {
@@ -28,6 +29,7 @@ export interface AIJobExtraction {
   location: string;
   workMode: WorkMode;
   link?: string;
+  salary?: string;
 }
 
 export type JobFormData = Omit<JobEntry, 'id'>;

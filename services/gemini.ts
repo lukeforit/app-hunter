@@ -13,7 +13,13 @@ export async function extractJobFromText(text: string): Promise<AIJobExtraction>
     ${text}`,
     config: {
       systemInstruction: `You are a high-precision recruitment data extractor. 
-      Analyze the input and map it to: companyName, role, location, workMode (On-site, Remote, Hybrid), and link. 
+      Analyze the input and map it to: companyName, role, location, workMode (On-site, Remote, Hybrid), link, and salary. 
+      
+      Salary Extraction Rules:
+      1. If a range is provided (e.g., "$120k - $150k"), extract only the maximum numerical value (e.g., "$150,000").
+      2. If no salary is found, return an empty string.
+      3. Include currency symbols if present.
+      
       Defaults: workMode = 'On-site'.`,
       responseMimeType: "application/json",
       responseSchema: {
@@ -26,7 +32,8 @@ export async function extractJobFromText(text: string): Promise<AIJobExtraction>
             type: Type.STRING, 
             enum: ['On-site', 'Remote', 'Hybrid']
           },
-          link: { type: Type.STRING }
+          link: { type: Type.STRING },
+          salary: { type: Type.STRING }
         },
         required: ["companyName", "role", "location", "workMode"]
       }
