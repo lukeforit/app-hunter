@@ -1,42 +1,37 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { AIJobExtraction, WorkMode } from "../types";
+import { AIJobExtraction } from "../types";
 
-export const parseJobDescription = async (text: string): Promise<AIJobExtraction> => {
+export async function extractJobFromText(text: string): Promise<AIJobExtraction> {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
-    contents: `Parse the following job posting or text and extract the company name, role, location, and work mode. If you can find a URL in the text, extract it as the link.
+    contents: `Extract job details from this text or URL. Return JSON.
     
-    Job Text:
+    Source Content:
     ${text}`,
     config: {
-      systemInstruction: "You are a professional recruiting assistant. Extract structured data from messy job posting text. If values are missing, provide best guesses or leave as empty strings. For workMode, choose only from: 'On-site', 'Remote', or 'Hybrid'.",
+      systemInstruction: `You are a high-precision recruitment data extractor. 
+      Analyze the input and map it to: companyName, role, location, workMode (On-site, Remote, Hybrid), and link. 
+      Defaults: workMode = 'On-site'.`,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          companyName: { type: Type.STRING, description: "Name of the company hiring" },
-          role: { type: Type.STRING, description: "The job title or role name" },
-          location: { type: Type.STRING, description: "Physical location (City, State, or Country)" },
+          companyName: { type: Type.STRING },
+          role: { type: Type.STRING },
+          location: { type: Type.STRING },
           workMode: { 
             type: Type.STRING, 
-            description: "On-site, Remote, or Hybrid",
             enum: ['On-site', 'Remote', 'Hybrid']
           },
-          link: { type: Type.STRING, description: "URL to the job posting" }
+          link: { type: Type.STRING }
         },
         required: ["companyName", "role", "location", "workMode"]
       }
     }
   });
 
-  try {
-    const data = JSON.parse(response.text);
-    return data as AIJobExtraction;
-  } catch (error) {
-    console.error("Failed to parse Gemini response", error);
-    throw new Error("Failed to extract job data automatically.");
-  }
-};
+  return JSON.parse(response.text) as AIJobExtraction;
+}

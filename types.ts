@@ -29,3 +29,5 @@ export interface AIJobExtraction {
   workMode: WorkMode;
   link?: string;
 }
+
+export type JobFormData = Omit<JobEntry, 'id'>;
