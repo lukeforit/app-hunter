@@ -17,6 +17,27 @@
       .font-mono {
         font-family: 'JetBrains Mono', monospace;
       }
+
+      /* Global Custom Scrollbar Utility */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #3f3f46;
+      }
+      
+      /* Standard scrollbar for non-webkit browsers */
+      .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #27272a transparent;
+      }
     </style>
   <script type="importmap">
 {
