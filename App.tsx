@@ -1,15 +1,14 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Briefcase, Download, Upload, Layers, X, AlertTriangle } from 'lucide-react';
+import { Briefcase, Download, Upload, Layers } from 'lucide-react';
 import { useJobs } from './hooks/useJobs';
 import { useFilteredJobs } from './hooks/useFilteredJobs';
 import { JobCard } from './features/job-tracker/components/JobCard';
-import { MagicPaste } from './features/job-tracker/components/MagicPaste';
 import { EmptyState } from './features/job-tracker/components/EmptyState';
-import { JobForm } from './features/job-tracker/components/JobForm';
 import { ActionBar } from './features/job-tracker/sections/ActionBar';
+import { JobModal } from './features/job-tracker/components/JobModal';
+import { DeleteConfirmationModal } from './features/job-tracker/components/DeleteConfirmationModal';
 import { Button } from './components/ui/Button';
-import { Modal } from './components/ui/Modal';
 import { JobEntry, JobStatus, WorkMode } from './types';
 import { exportJobs, importJobsFromFile } from './lib/file-utils';
 
@@ -167,50 +166,19 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Confirmation Modal for Deletion */}
-      {deletingId && (
-        <Modal onClose={handleCloseModal}>
-          <div className="space-y-6 text-center">
-            <div className="mx-auto w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/20">
-              <AlertTriangle className="w-6 h-6 text-red-500" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold">{t('deleteModal.title')}</h3>
-              <p className="text-zinc-400 text-sm">{t('deleteModal.description')}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <Button variant="secondary" onClick={handleCloseModal}>{t('common.cancel')}</Button>
-              <Button variant="danger" onClick={confirmDelete} className="bg-red-500 text-white hover:bg-red-600">{t('deleteModal.confirm')}</Button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      <DeleteConfirmationModal 
+        isOpen={!!deletingId}
+        onClose={handleCloseModal}
+        onConfirm={confirmDelete}
+      />
 
-      {(isAdding || editingJob) && (
-        <Modal onClose={handleCloseModal}>
-          <div className="space-y-6 max-h-[90vh] overflow-y-auto pr-2 custom-scrollbar">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold tracking-tight">{editingJob ? t('common.updateHunt') : t('common.newHunt')}</h2>
-              <Button variant="ghost" size="icon" onClick={handleCloseModal}>
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-
-            {!editingJob && <MagicPaste onExtracted={(data) => { addJob(data); setIsAdding(false); }} />}
-
-            <div className="h-px bg-zinc-800" />
-            
-            <JobForm 
-              initialData={editingJob} 
-              onSubmit={(data) => {
-                if (editingJob) updateJob(editingJob.id, data);
-                else addJob(data as any);
-                handleCloseModal();
-              }} 
-            />
-          </div>
-        </Modal>
-      )}
+      <JobModal 
+        isOpen={isAdding || !!editingJob}
+        onClose={handleCloseModal}
+        editingJob={editingJob}
+        onAdd={addJob}
+        onUpdate={updateJob}
+      />
     </div>
   );
 };
