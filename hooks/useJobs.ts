@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { JobEntry, JobFormData } from '../types';
 
 const STORAGE_KEY = 'the_hunter_jobs_v2';
@@ -8,21 +7,30 @@ export function useJobs() {
   const [jobs, setJobs] = useState<JobEntry[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Load jobs on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        setJobs(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setJobs(parsed);
+        }
       } catch (e) {
-        console.error("Failed to parse stored jobs", e);
+        console.error("Failed to parse stored jobs:", e);
       }
     }
     setIsLoaded(true);
   }, []);
 
+  // Save jobs only after initial load to prevent overwriting with empty array
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+      } catch (e) {
+        console.error("Failed to save jobs to localStorage:", e);
+      }
     }
   }, [jobs, isLoaded]);
 
@@ -52,5 +60,6 @@ export function useJobs() {
     updateJob,
     deleteJob,
     importJobs,
+    isLoaded
   };
 }

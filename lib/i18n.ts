@@ -1,3 +1,4 @@
+
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
@@ -29,7 +30,8 @@ const resources = {
         interviewing: 'Interviewing',
         rejected: 'Rejected',
         importSuccess: 'Job hunts imported successfully!',
-        importError: 'Invalid file format. Please provide a valid JSON array of job entries.'
+        importError: 'Invalid file format. Please provide a valid JSON array of job entries.',
+        cancel: 'Cancel'
       },
       fields: {
         role: 'Role',
@@ -48,6 +50,11 @@ const resources = {
       emptyState: {
         title: 'Your hunt is quiet...',
         description: 'Use Magic Paste to automatically track your next big move.'
+      },
+      deleteModal: {
+        title: 'Confirm Deletion',
+        description: 'Are you sure you want to remove this job hunt? This action cannot be undone.',
+        confirm: 'Delete Hunt'
       }
     }
   }

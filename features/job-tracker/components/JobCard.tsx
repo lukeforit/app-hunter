@@ -1,6 +1,7 @@
-import React from 'react';
+
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Calendar, Link2, Trash2, Pencil, Banknote, Building2 } from 'lucide-react';
+import { MapPin, Calendar, Link2, Trash2, Pencil, Banknote } from 'lucide-react';
 import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
@@ -14,7 +15,7 @@ interface JobCardProps {
   onStatusChange: (id: string, status: JobStatus) => void;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete, onStatusChange }) => {
+export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }: JobCardProps) => {
   const { t } = useTranslation();
 
   const getStatusLabel = (status: JobStatus) => {
@@ -35,21 +36,29 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete
     }
   };
 
-  const handleOpenLink = () => {
+  const handleOpenLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (job.link) {
       window.open(job.link, '_blank', 'noopener,noreferrer');
     }
   };
 
   return (
-    <div className={`group relative bg-zinc-900/40 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-all ${compact ? 'p-3 flex items-center gap-4' : 'p-5 flex flex-col gap-4'}`}>
+    <div className={cn(
+      "group relative bg-zinc-900/40 border border-zinc-800 rounded-xl transition-all duration-200",
+      "hover:border-zinc-700 hover:bg-zinc-900/60 hover:shadow-xl hover:shadow-black/20",
+      compact ? 'p-3 flex items-center gap-4' : 'p-5 flex flex-col gap-4'
+    )}>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h4 className={`font-extrabold text-zinc-100 truncate ${compact ? 'text-base' : 'text-lg tracking-tight'}`}>
+            <h4 className={cn(
+              "font-extrabold text-zinc-100 truncate tracking-tight group-hover:text-white transition-colors",
+              compact ? 'text-base' : 'text-lg'
+            )}>
               {job.companyName}
             </h4>
-            <p className="text-zinc-400 text-sm font-medium truncate flex items-center gap-1.5">
+            <p className="text-zinc-400 text-sm font-medium truncate flex items-center gap-1.5 mt-0.5">
               {job.role}
             </p>
           </div>
@@ -60,35 +69,53 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete
           <div className="mt-4 space-y-2 text-[11px] text-zinc-500 font-medium">
             <div className="flex flex-wrap gap-y-1 gap-x-4">
               <div className="flex items-center gap-1.5">
-                <MapPin className="w-3 h-3" />
+                <MapPin className="w-3.5 h-3.5 text-zinc-600" />
                 {job.location} • {getWorkModeLabel(job.workMode)}
               </div>
               {job.salary && (
-                <div className="flex items-center gap-1.5 text-emerald-500/90">
-                  <Banknote className="w-3 h-3" />
+                <div className="flex items-center gap-1.5 text-emerald-500/90 bg-emerald-500/5 px-1.5 py-0.5 rounded-md border border-emerald-500/10">
+                  <Banknote className="w-3.5 h-3.5" />
                   {job.salary}
                 </div>
               )}
             </div>
             <div className="flex items-center gap-1.5 w-fit">
-              <Calendar className="w-3 h-3" />
+              <Calendar className="w-3.5 h-3.5 text-zinc-600" />
               {formatDate(job.dateApplied)}
             </div>
           </div>
         )}
       </div>
 
-      <div className={`flex items-center gap-4 ${compact ? 'mt-0' : 'mt-1'}`}>
+      <div className={cn("flex items-center gap-4", compact ? 'mt-0' : 'mt-1 pt-2 border-t border-zinc-800/50')}>
         <div className="flex items-center gap-1">
           {job.link && (
-            <Button variant="blue" size="icon" onClick={handleOpenLink} title={t('common.openLink')}>
+            <Button 
+              variant="blue" 
+              size="icon" 
+              onClick={handleOpenLink} 
+              title={t('common.openLink')}
+              aria-label={t('common.openLink')}
+            >
               <Link2 className="w-4 h-4" />
             </Button>
           )}
-          <Button variant="ghost" size="icon" onClick={() => onEdit(job)} title={t('common.updateHunt')}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => onEdit(job)} 
+            title={t('common.updateHunt')}
+            aria-label={t('common.updateHunt')}
+          >
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button variant="danger" size="icon" onClick={() => onDelete(job.id)} title={t('common.deleteJob')}>
+          <Button 
+            variant="danger" 
+            size="icon" 
+            onClick={() => onDelete(job.id)} 
+            title={t('common.deleteJob')}
+            aria-label={t('common.deleteJob')}
+          >
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -101,7 +128,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete
             <select 
               value={job.status} 
               onChange={(e) => onStatusChange(job.id, e.target.value as JobStatus)}
-              className="bg-zinc-800 text-[10px] font-bold border-none rounded-lg px-2 py-1.5 text-zinc-400 focus:ring-0 outline-none cursor-pointer hover:text-white transition-colors"
+              className="bg-zinc-800/50 text-[10px] font-bold border-none rounded-lg px-2.5 py-1.5 text-zinc-400 focus:ring-1 focus:ring-zinc-700 outline-none cursor-pointer hover:text-white transition-all"
             >
               {Object.values(JobStatus).map(s => (
                 <option key={s} value={s}>{getStatusLabel(s)}</option>
@@ -112,4 +139,6 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete
       </div>
     </div>
   );
-};
+});
+
+JobCard.displayName = 'JobCard';

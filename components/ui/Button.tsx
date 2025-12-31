@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn } from '../../lib/utils';
 
@@ -13,12 +14,12 @@ export const Button: React.FC<ButtonProps> = ({
   ...props 
 }) => {
   const variants = {
-    primary: 'bg-zinc-100 text-zinc-950 hover:bg-white shadow-sm',
-    secondary: 'bg-zinc-800 text-zinc-100 hover:bg-zinc-700',
-    outline: 'border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700',
-    ghost: 'text-zinc-400 hover:text-white hover:bg-zinc-800/50',
-    danger: 'text-zinc-400 hover:text-red-400 hover:bg-red-400/10',
-    blue: 'text-zinc-400 hover:text-blue-400 hover:bg-blue-400/10',
+    primary: 'bg-zinc-100 text-zinc-950 hover:bg-white shadow-sm shadow-white/5 active:bg-zinc-200',
+    secondary: 'bg-zinc-800 text-zinc-100 hover:bg-zinc-700 active:bg-zinc-600',
+    outline: 'border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 active:bg-zinc-900',
+    ghost: 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50 active:bg-zinc-800',
+    danger: 'text-zinc-500 hover:text-red-400 hover:bg-red-500/10 active:bg-red-500/20',
+    blue: 'text-zinc-500 hover:text-blue-400 hover:bg-blue-400/10 active:bg-blue-400/20',
   };
 
   const sizes = {
@@ -31,7 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none',
+        'inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 active:scale-95 disabled:opacity-40 disabled:pointer-events-none',
         variants[variant],
         sizes[size],
         className
