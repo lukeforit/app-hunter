@@ -9,7 +9,8 @@ import { EmptyState } from './features/job-tracker/components/EmptyState';
 import { JobForm } from './features/job-tracker/components/JobForm';
 import { Button } from './components/ui/Button';
 import { Modal } from './components/ui/Modal';
-import { JobEntry, JobStatus } from './types';
+import { FilterGroup } from './components/ui/FilterGroup';
+import { JobEntry, JobStatus, WorkMode } from './types';
 import { exportJobs, importJobsFromFile } from './lib/file-utils';
 
 const App: React.FC = () => {
@@ -18,17 +19,23 @@ const App: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<JobStatus | null>(null);
+  const [workModeFilter, setWorkModeFilter] = useState<WorkMode | null>(null);
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredJobs = useMemo(() => {
-    return jobs.filter(j => 
-      [j.companyName, j.role, j.location].some(f => 
+    return jobs.filter(j => {
+      const matchesSearch = [j.companyName, j.role, j.location].some(f => 
         (f || '').toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [jobs, searchQuery]);
+      );
+      const matchesStatus = statusFilter === null || j.status === statusFilter;
+      const matchesWorkMode = workModeFilter === null || j.workMode === workModeFilter;
+      
+      return matchesSearch && matchesStatus && matchesWorkMode;
+    });
+  }, [jobs, searchQuery, statusFilter, workModeFilter]);
 
   const handleStatusChange = useCallback((id: string, status: JobStatus) => {
     updateJob(id, { status });
@@ -54,6 +61,35 @@ const App: React.FC = () => {
     setEditingJob(null);
     setDeletingId(null);
   }, []);
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter(null);
+    setWorkModeFilter(null);
+  };
+
+  // Fix: Explicitly cast Object.values to Enum array to prevent inference as string[]
+  const statusOptions = useMemo(() => 
+    (Object.values(JobStatus) as JobStatus[]).map(s => ({
+      value: s,
+      label: t(`common.${s.toLowerCase()}`)
+    }))
+  , [t]);
+
+  // Fix: Explicitly cast Object.values to Enum array to prevent inference as string[]
+  const workModeOptions = useMemo(() => 
+    (Object.values(WorkMode) as WorkMode[]).map(m => {
+      const keyMap: Record<string, string> = {
+        [WorkMode.ON_SITE]: 'onSite',
+        [WorkMode.REMOTE]: 'remote',
+        [WorkMode.HYBRID]: 'hybrid',
+      };
+      return {
+        value: m,
+        label: t(`common.${keyMap[m]}`)
+      };
+    })
+  , [t]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-zinc-800/50">
@@ -99,30 +135,57 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-10 space-y-10">
-        <section className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full md:w-96 group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-zinc-300 transition-colors" />
-            <input 
-              type="text" 
-              placeholder={t('common.searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-900/40 border border-zinc-800 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 transition-all focus:bg-zinc-900/60"
-            />
+      <main className="max-w-6xl mx-auto px-6 py-10 space-y-8">
+        <section className="space-y-6">
+          <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+            {/* Search Box */}
+            <div className="relative flex-1 group min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-zinc-300 transition-colors" />
+              <input 
+                type="text" 
+                placeholder={t('common.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-zinc-900/40 border border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 transition-all focus:bg-zinc-900/60"
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Fix: Use arrow functions for onChange to ensure compatibility with Dispatch types */}
+              <FilterGroup 
+                options={statusOptions} 
+                value={statusFilter} 
+                onChange={(val) => setStatusFilter(val)} 
+              />
+              <FilterGroup 
+                options={workModeOptions} 
+                value={workModeFilter} 
+                onChange={(val) => setWorkModeFilter(val)} 
+              />
+            </div>
+
+            <Button onClick={() => setIsAdding(true)} className="gap-2 font-bold shadow-lg shadow-white/5 py-2.5">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">{t('common.addApplication')}</span>
+              <span className="sm:hidden">{t('common.addApplication')}</span>
+            </Button>
           </div>
-          <Button onClick={() => setIsAdding(true)} className="w-full md:w-auto gap-2 font-bold shadow-lg shadow-white/5">
-            <Plus className="w-4 h-4" />
-            {t('common.addApplication')}
-          </Button>
         </section>
 
         {!isLoaded ? (
            <div className="flex justify-center py-20">
              <div className="w-6 h-6 border-2 border-zinc-800 border-t-zinc-400 rounded-full animate-spin" />
            </div>
-        ) : jobs.length === 0 ? (
-          <EmptyState />
+        ) : filteredJobs.length === 0 ? (
+          <div className="space-y-6">
+             {jobs.length === 0 ? <EmptyState /> : (
+               <div className="text-center py-20 bg-zinc-900/20 border border-zinc-800/50 border-dashed rounded-3xl">
+                 <p className="text-zinc-500 font-medium italic">No results match your current filters.</p>
+                 <Button variant="ghost" size="sm" onClick={clearFilters} className="mt-4 text-zinc-400">Clear all filters</Button>
+               </div>
+             )}
+          </div>
         ) : (
           <div className={`grid gap-4 transition-all duration-300 ${isCompact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
             {filteredJobs.map(job => (
@@ -160,7 +223,7 @@ const App: React.FC = () => {
 
       {(isAdding || editingJob) && (
         <Modal onClose={handleCloseModal}>
-          <div className="space-y-6">
+          <div className="space-y-6 max-h-[90vh] overflow-y-auto pr-2 custom-scrollbar">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold tracking-tight">{editingJob ? t('common.updateHunt') : t('common.newHunt')}</h2>
               <Button variant="ghost" size="icon" onClick={handleCloseModal}>
@@ -183,6 +246,21 @@ const App: React.FC = () => {
           </div>
         </Modal>
       )}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #27272a;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #3f3f46;
+        }
+      `}</style>
     </div>
   );
 };
