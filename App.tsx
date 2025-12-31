@@ -1,8 +1,8 @@
-
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Briefcase, Search, Plus, Download, Upload, Layers, X, AlertTriangle } from 'lucide-react';
 import { useJobs } from './hooks/useJobs';
+import { useFilteredJobs } from './hooks/useFilteredJobs';
 import { JobCard } from './features/job-tracker/components/JobCard';
 import { MagicPaste } from './features/job-tracker/components/MagicPaste';
 import { EmptyState } from './features/job-tracker/components/EmptyState';
@@ -16,26 +16,23 @@ import { exportJobs, importJobsFromFile } from './lib/file-utils';
 const App: React.FC = () => {
   const { t } = useTranslation();
   const { jobs, addJob, updateJob, deleteJob, importJobs, isLoaded } = useJobs();
+  
+  const {
+    filteredJobs,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    workModeFilter,
+    setWorkModeFilter,
+    clearFilters
+  } = useFilteredJobs(jobs);
+
   const [isAdding, setIsAdding] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<JobStatus | null>(null);
-  const [workModeFilter, setWorkModeFilter] = useState<WorkMode | null>(null);
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const filteredJobs = useMemo(() => {
-    return jobs.filter(j => {
-      const matchesSearch = [j.companyName, j.role, j.location].some(f => 
-        (f || '').toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      const matchesStatus = statusFilter === null || j.status === statusFilter;
-      const matchesWorkMode = workModeFilter === null || j.workMode === workModeFilter;
-      
-      return matchesSearch && matchesStatus && matchesWorkMode;
-    });
-  }, [jobs, searchQuery, statusFilter, workModeFilter]);
 
   const handleStatusChange = useCallback((id: string, status: JobStatus) => {
     updateJob(id, { status });
@@ -62,13 +59,7 @@ const App: React.FC = () => {
     setDeletingId(null);
   }, []);
 
-  const clearFilters = () => {
-    setSearchQuery('');
-    setStatusFilter(null);
-    setWorkModeFilter(null);
-  };
-
-  // Fix: Explicitly cast Object.values to Enum array to prevent inference as string[]
+  // Options for filter UI
   const statusOptions = useMemo(() => 
     (Object.values(JobStatus) as JobStatus[]).map(s => ({
       value: s,
@@ -76,7 +67,6 @@ const App: React.FC = () => {
     }))
   , [t]);
 
-  // Fix: Explicitly cast Object.values to Enum array to prevent inference as string[]
   const workModeOptions = useMemo(() => 
     (Object.values(WorkMode) as WorkMode[]).map(m => {
       const keyMap: Record<string, string> = {
@@ -152,7 +142,6 @@ const App: React.FC = () => {
 
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-3">
-              {/* Fix: Use arrow functions for onChange to ensure compatibility with Dispatch types */}
               <FilterGroup 
                 options={statusOptions} 
                 value={statusFilter} 
