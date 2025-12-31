@@ -1,5 +1,5 @@
-
 import React from 'react';
+import i18n from './i18n';
 import { JobEntry } from "../types";
 
 export const exportJobs = (jobs: JobEntry[]) => {
@@ -25,12 +25,12 @@ export const importJobsFromFile = (
       const data = JSON.parse(ev.target?.result as string);
       if (Array.isArray(data)) {
         onSuccess(data);
-        alert('Hunts imported successfully!');
+        alert(i18n.t('common.importSuccess'));
       } else {
         throw new Error('Invalid format');
       }
     } catch (err) {
-      alert('Invalid file format. Please provide a valid JSON array of job entries.');
+      alert(i18n.t('common.importError'));
     }
   };
   reader.readAsText(file);

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Button } from '../../../components/ui/Button';
 
@@ -8,6 +9,7 @@ interface JobFormProps {
 }
 
 export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
+  const { t } = useTranslation();
   const [data, setData] = useState<Partial<JobEntry>>(initialData || {
     companyName: '',
     role: '',
@@ -24,10 +26,28 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
     onSubmit(data);
   };
 
+  const getStatusLabel = (status: JobStatus) => {
+    switch (status) {
+      case JobStatus.SENT: return t('common.sent');
+      case JobStatus.INTERVIEWING: return t('common.interviewing');
+      case JobStatus.REJECTED: return t('common.rejected');
+      default: return status;
+    }
+  };
+
+  const getWorkModeLabel = (mode: WorkMode) => {
+    switch (mode) {
+      case WorkMode.REMOTE: return t('common.remote');
+      case WorkMode.ON_SITE: return t('common.onSite');
+      case WorkMode.HYBRID: return t('common.hybrid');
+      default: return mode;
+    }
+  };
+
   return (
     <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
       <div className="col-span-2 space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Role</label>
+        <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.role')}</label>
         <input 
           required 
           value={data.role || ''} 
@@ -37,7 +57,7 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
         />
       </div>
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Company</label>
+        <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.company')}</label>
         <input 
           required 
           value={data.companyName || ''} 
@@ -47,7 +67,7 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
         />
       </div>
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Location</label>
+        <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.location')}</label>
         <input 
           value={data.location || ''} 
           onChange={e => setData({...data, location: e.target.value})} 
@@ -56,7 +76,7 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
         />
       </div>
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Salary (Max)</label>
+        <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.salary')}</label>
         <input 
           value={data.salary || ''} 
           onChange={e => setData({...data, salary: e.target.value})} 
@@ -65,17 +85,17 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
         />
       </div>
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Mode</label>
+        <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.mode')}</label>
         <select 
           value={data.workMode} 
           onChange={e => setData({...data, workMode: e.target.value as WorkMode})} 
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none"
         >
-          {Object.values(WorkMode).map(m => <option key={m} value={m}>{m}</option>)}
+          {Object.values(WorkMode).map(m => <option key={m} value={m}>{getWorkModeLabel(m)}</option>)}
         </select>
       </div>
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Date</label>
+        <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.date')}</label>
         <input 
           type="date" 
           value={data.dateApplied} 
@@ -84,7 +104,7 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
         />
       </div>
       <div className="col-span-2 space-y-1.5">
-        <label className="text-[10px] font-bold text-zinc-500 uppercase">Link</label>
+        <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.link')}</label>
         <input 
           type="url" 
           value={data.link || ''} 
@@ -93,7 +113,9 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
           placeholder="https://..." 
         />
       </div>
-      <Button type="submit" className="col-span-2 py-3 mt-2">{initialData ? 'Update' : 'Save'} Hunt</Button>
+      <Button type="submit" className="col-span-2 py-3 mt-2">
+        {initialData ? t('common.update') : t('common.save')} {t('common.hunt')}
+      </Button>
     </form>
   );
 };

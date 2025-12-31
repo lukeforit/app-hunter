@@ -1,7 +1,7 @@
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapPin, Calendar, ExternalLink, Trash2, Settings2, Banknote } from 'lucide-react';
-import { JobEntry, JobStatus } from '../../../types';
+import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { formatDate } from '../../../lib/utils';
@@ -15,6 +15,26 @@ interface JobCardProps {
 }
 
 export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete, onStatusChange }) => {
+  const { t } = useTranslation();
+
+  const getStatusLabel = (status: JobStatus) => {
+    switch (status) {
+      case JobStatus.SENT: return t('common.sent');
+      case JobStatus.INTERVIEWING: return t('common.interviewing');
+      case JobStatus.REJECTED: return t('common.rejected');
+      default: return status;
+    }
+  };
+
+  const getWorkModeLabel = (mode: WorkMode) => {
+    switch (mode) {
+      case WorkMode.REMOTE: return t('common.remote');
+      case WorkMode.ON_SITE: return t('common.onSite');
+      case WorkMode.HYBRID: return t('common.hybrid');
+      default: return mode;
+    }
+  };
+
   return (
     <div className={`group relative bg-zinc-900/40 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-all ${compact ? 'p-3 flex items-center gap-4' : 'p-5 flex flex-col gap-4'}`}>
       <div className={`${compact ? 'w-10 h-10' : 'w-12 h-12'} bg-zinc-800/50 rounded-lg flex items-center justify-center shrink-0 border border-zinc-800 group-hover:border-zinc-700 transition-colors`}>
@@ -27,14 +47,14 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete
             <h4 className={`font-bold text-zinc-100 truncate ${compact ? 'text-sm' : 'text-base'}`}>{job.role}</h4>
             <p className="text-zinc-500 text-xs truncate">{job.companyName}</p>
           </div>
-          {!compact && <Badge variant={job.status}>{job.status}</Badge>}
+          {!compact && <Badge variant={job.status}>{getStatusLabel(job.status)}</Badge>}
         </div>
 
         {!compact && (
           <div className="mt-3 flex flex-wrap gap-y-2 gap-x-4 text-[11px] text-zinc-500 font-medium">
             <div className="flex items-center gap-1.5">
               <MapPin className="w-3 h-3" />
-              {job.location} • {job.workMode}
+              {job.location} • {getWorkModeLabel(job.workMode)}
             </div>
             {job.salary && (
               <div className="flex items-center gap-1.5 text-emerald-500/90">
@@ -51,7 +71,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete
       </div>
 
       <div className={`flex items-center ${compact ? 'gap-2' : 'justify-between mt-2'}`}>
-        {compact && <Badge variant={job.status}>{job.status}</Badge>}
+        {compact && <Badge variant={job.status}>{getStatusLabel(job.status)}</Badge>}
         
         <div className="flex items-center gap-1">
           {job.link && (
@@ -73,7 +93,9 @@ export const JobCard: React.FC<JobCardProps> = ({ job, compact, onEdit, onDelete
             onChange={(e) => onStatusChange(job.id, e.target.value as JobStatus)}
             className="bg-zinc-800 text-[10px] font-bold border-none rounded-lg px-2 py-1.5 text-zinc-400 focus:ring-0 outline-none cursor-pointer hover:text-white transition-colors"
           >
-            {Object.values(JobStatus).map(s => <option key={s} value={s}>{s}</option>)}
+            {Object.values(JobStatus).map(s => (
+              <option key={s} value={s}>{getStatusLabel(s)}</option>
+            ))}
           </select>
         )}
       </div>

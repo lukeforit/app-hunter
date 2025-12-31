@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { extractJobFromText } from '../../../services/gemini';
@@ -10,6 +10,7 @@ interface MagicPasteProps {
 }
 
 export const MagicPaste: React.FC<MagicPasteProps> = ({ onExtracted }) => {
+  const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +27,7 @@ export const MagicPaste: React.FC<MagicPasteProps> = ({ onExtracted }) => {
       });
       setContent('');
     } catch (e) {
-      alert("AI extraction failed. Try manual entry.");
+      alert(t('magicPaste.error'));
     } finally {
       setLoading(false);
     }
@@ -36,11 +37,11 @@ export const MagicPaste: React.FC<MagicPasteProps> = ({ onExtracted }) => {
     <div className="space-y-3">
       <label className="text-xs font-semibold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
         <Sparkles className="w-3 h-3" />
-        Magic Paste (AI Extractor)
+        {t('magicPaste.label')}
       </label>
       <div className="relative">
         <textarea 
-          placeholder="Paste job URL or description..."
+          placeholder={t('magicPaste.placeholder')}
           className="w-full h-32 bg-zinc-950/50 border border-zinc-800 rounded-xl p-4 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-600 resize-none font-mono"
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -53,7 +54,7 @@ export const MagicPaste: React.FC<MagicPasteProps> = ({ onExtracted }) => {
           className="absolute bottom-3 right-3 gap-2"
         >
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-          {loading ? 'Parsing...' : 'Extract'}
+          {loading ? t('common.parsing') : t('common.extract')}
         </Button>
       </div>
     </div>

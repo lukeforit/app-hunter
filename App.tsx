@@ -1,5 +1,5 @@
-
 import React, { useState, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Briefcase, Search, Plus, Download, Upload, Layers, X } from 'lucide-react';
 import { useJobs } from './hooks/useJobs';
 import { JobCard } from './features/job-tracker/components/JobCard';
@@ -12,6 +12,7 @@ import { JobEntry } from './types';
 import { exportJobs, importJobsFromFile } from './lib/file-utils';
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
   const { jobs, addJob, updateJob, deleteJob, importJobs } = useJobs();
   const [isAdding, setIsAdding] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
@@ -34,23 +35,23 @@ const App: React.FC = () => {
           <div className="bg-white p-1.5 rounded-lg shadow-xl shadow-white/5">
             <Briefcase className="w-5 h-5 text-zinc-950" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight">The Hunter</h1>
+          <h1 className="text-xl font-bold tracking-tight">{t('common.appName')}</h1>
         </div>
         
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => setIsCompact(!isCompact)} className="hidden md:flex gap-2">
             <Layers className="w-4 h-4" />
-            {isCompact ? 'Comfortable' : 'Compact'}
+            {isCompact ? t('common.comfortable') : t('common.compact')}
           </Button>
           <div className="h-4 w-px bg-zinc-800 mx-2" />
-          <Button variant="ghost" size="icon" onClick={() => exportJobs(jobs)} title="Export Hunts">
+          <Button variant="ghost" size="icon" onClick={() => exportJobs(jobs)} title={t('common.exportHunts')}>
             <Download className="w-5 h-5" />
           </Button>
           <div className="flex items-center">
             <Button 
               variant="ghost" 
               size="icon" 
-              title="Import Hunts" 
+              title={t('common.importHunts')} 
               onClick={() => fileInputRef.current?.click()}
             >
                <Upload className="w-5 h-5" />
@@ -72,7 +73,7 @@ const App: React.FC = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <input 
               type="text" 
-              placeholder="Search hunts..." 
+              placeholder={t('common.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-zinc-900/40 border border-zinc-800 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-all"
@@ -80,7 +81,7 @@ const App: React.FC = () => {
           </div>
           <Button onClick={() => setIsAdding(true)} className="w-full md:w-auto gap-2">
             <Plus className="w-4 h-4" />
-            Add Application
+            {t('common.addApplication')}
           </Button>
         </section>
 
@@ -106,7 +107,7 @@ const App: React.FC = () => {
         <Modal onClose={() => { setIsAdding(false); setEditingJob(null); }}>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">{editingJob ? 'Update Hunt' : 'New Hunt'}</h2>
+              <h2 className="text-xl font-bold">{editingJob ? t('common.updateHunt') : t('common.newHunt')}</h2>
               <Button variant="ghost" size="icon" onClick={() => { setIsAdding(false); setEditingJob(null); }}>
                 <X className="w-5 h-5" />
               </Button>
