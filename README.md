@@ -5,8 +5,8 @@
 
 ## 🚀 Key Features
 
-- **Magic Paste (AI Parser):** Paste a job URL or full job description, and the built-in Gemini AI will automatically extract the company, role, location, salary, and work mode.
-- **Visual Dashboard:** A clean, "Linear-style" interface to track your applications with color-coded status badges.
+- **Job details extraction (with Gemini AI):** Paste a job URL or full job description, and the built-in Gemini AI will automatically extract the company, role, location, salary, and work mode.
+- **Dashboard:** Save, update and track your job applications. 
 - **Data Portability:** Export your entire hunt history as a `JSON` file or import an existing one to switch devices.
 - **No Backend Required:** Zero database setup. All data stays on your machine via `localStorage`.
 - **Compact Mode:** Toggle between comfortable and compact views to manage 20+ applications on a single screen.
@@ -48,6 +48,16 @@ Each job entry follows this structure:
   "status": "Sent | Interviewing | Rejected"
 }
 ```
+
+## ⚠️ Limitations & Data Persistence
+
+Since **The Hunter** runs entirely in your browser without a backend database:
+
+- **Browser Storage:** All data is stored in your browser's `localStorage`. Clearing your browser cache **will delete your data**.
+- **Device Specific:** Your jobs are tied to the specific browser and device you are using. They will not automatically sync to your phone or laptop.
+- **Privacy:** Your data never leaves your device (except when sending descriptions to Google Gemini for parsing).
+
+**Recommendation:** regularly use the **Export to JSON** feature to backup your data.
 
 ## 📜 License
 
