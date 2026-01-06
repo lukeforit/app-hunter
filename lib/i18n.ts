@@ -55,7 +55,14 @@ const resources = {
         title: 'Confirm Deletion',
         description: 'Are you sure you want to remove this job hunt? This action cannot be undone.',
         confirm: 'Delete Hunt'
-      }
+      },
+      legal: {
+        privacyTitle: 'Privacy & Data',
+        privacyBody: 'The Hunter is a local-first application. All job data you enter is stored exclusively in your browser\'s local storage. We do not have a backend and cannot access your data. When using the "Magic Paste" feature, the text you paste is sent to Google Gemini for processing.',
+        termsTitle: 'Terms of Use',
+        termsBody: 'This tool is provided "as-is" without warranty of any kind. AI-generated data should be verified for accuracy. We are not responsible for any data loss resulting from browser cache clearance.'
+      },
+
     }
   }
 };
