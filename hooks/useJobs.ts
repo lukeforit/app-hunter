@@ -29,7 +29,11 @@ export function useJobs() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
       } catch (e) {
-        console.error("Failed to save jobs to localStorage:", e);
+        if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+          console.error("Critical: localStorage quota exceeded. Export your data immediately to avoid loss!");
+        } else {
+          console.error("Failed to save jobs to localStorage:", e);
+        }
       }
     }
   }, [jobs, isLoaded]);
