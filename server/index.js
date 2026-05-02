@@ -71,16 +71,19 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 // ── Gemini Proxy ──────────────────────────────────────────────────────────────
 app.post('/api/extract', async (req, res) => {
+  const requestId = crypto.randomUUID();
+  res.setHeader('X-Request-Id', requestId);
+
   const { text } = req.body;
 
   if (!text || typeof text !== 'string') {
-    return res.status(400).json({ error: 'Request body must contain a "text" string.' });
+    return res.status(400).json({ error: 'Request body must contain a "text" string.', requestId });
   }
   if (text.trim().length < 20) {
-    return res.status(400).json({ error: 'Input too short to be a valid job posting.' });
+    return res.status(400).json({ error: 'Input too short to be a valid job posting.', requestId });
   }
   if (text.length > 10_000) {
-    return res.status(400).json({ error: 'Input too long (max 10 000 characters).' });
+    return res.status(400).json({ error: 'Input too long (max 10 000 characters).', requestId });
   }
 
   try {
@@ -115,12 +118,12 @@ app.post('/api/extract', async (req, res) => {
 
     return res.json(JSON.parse(response.text));
   } catch (err) {
-    console.error('[/api/extract] Gemini error:', err?.message ?? err);
+    console.error(`[${requestId}] Gemini error:`, err?.message ?? err);
 
     if (err?.status === 429 || err?.message?.includes('quota')) {
-      return res.status(429).json({ error: 'AI quota exceeded. Try again later.' });
+      return res.status(429).json({ error: 'AI quota exceeded. Try again later.', requestId });
     }
-    return res.status(502).json({ error: 'AI service unavailable. Please try again later.' });
+    return res.status(502).json({ error: 'AI service unavailable. Please try again later.', requestId });
   }
 });
 
