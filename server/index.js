@@ -55,6 +55,15 @@ app.use('/api/', limiter);
 
 app.use(express.json({ limit: '50kb' }));
 
+// ── Content-Type enforcement ──────────────────────────────────────────────────
+// Reject any POST that isn't JSON before it reaches a route handler.
+app.use((req, res, next) => {
+  if (req.method === 'POST' && !req.is('application/json')) {
+    return res.status(415).json({ error: 'Content-Type must be application/json.' });
+  }
+  next();
+});
+
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
@@ -64,6 +73,9 @@ app.post('/api/extract', async (req, res) => {
 
   if (!text || typeof text !== 'string') {
     return res.status(400).json({ error: 'Request body must contain a "text" string.' });
+  }
+  if (text.trim().length < 20) {
+    return res.status(400).json({ error: 'Input too short to be a valid job posting.' });
   }
   if (text.length > 10_000) {
     return res.status(400).json({ error: 'Input too long (max 10 000 characters).' });
