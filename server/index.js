@@ -1,15 +1,30 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { GoogleGenAI, Type } from '@google/genai';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import 'dotenv/config';
 
+// ── Startup environment validation ────────────────────────────────────────────
+// Fail fast rather than serving broken responses at request time.
+if (!process.env.GEMINI_API_KEY) {
+  console.error('FATAL: GEMINI_API_KEY is not set. Refusing to start.');
+  process.exit(1);
+}
+if (!process.env.ALLOWED_ORIGIN) {
+  console.error('FATAL: ALLOWED_ORIGIN is not set. Refusing to start.');
+  process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ── Security Headers (helmet) ────────────────────────────────────────────────
+app.use(helmet());
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = ALLOWED_ORIGIN.split(',').map(o => o.trim());
@@ -52,10 +67,6 @@ app.post('/api/extract', async (req, res) => {
   }
   if (text.length > 10_000) {
     return res.status(400).json({ error: 'Input too long (max 10 000 characters).' });
-  }
-  if (!process.env.GEMINI_API_KEY) {
-    console.error('[/api/extract] GEMINI_API_KEY is not set');
-    return res.status(500).json({ error: 'Server is not configured. Please set GEMINI_API_KEY.' });
   }
 
   try {
