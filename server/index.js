@@ -1,15 +1,30 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { GoogleGenAI, Type } from '@google/genai';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import 'dotenv/config';
 
+// ── Startup environment validation ────────────────────────────────────────────
+// Fail fast rather than serving broken responses at request time.
+if (!process.env.GEMINI_API_KEY) {
+  console.error('FATAL: GEMINI_API_KEY is not set. Refusing to start.');
+  process.exit(1);
+}
+if (!process.env.ALLOWED_ORIGIN) {
+  console.error('FATAL: ALLOWED_ORIGIN is not set. Refusing to start.');
+  process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// ── Security Headers (helmet) ────────────────────────────────────────────────
+app.use(helmet());
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = ALLOWED_ORIGIN.split(',').map(o => o.trim());
@@ -28,34 +43,47 @@ app.use(cors({
 }));
 
 // ── Rate Limiting ─────────────────────────────────────────────────────────────
-// 20 requests per minute per IP — tune to your Gemini quota
+// 10 requests per minute per IP — Gemini calls are expensive, keep this tight.
+// Health checks are exempted so monitoring tools never trip the limiter.
 const limiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 20,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests. Please wait a moment before retrying.' },
+  message: { error: 'Too many requests. Please wait before retrying.' },
+  skip: (req) => req.path === '/api/health',
 });
 app.use('/api/', limiter);
 
 app.use(express.json({ limit: '50kb' }));
+
+// ── Content-Type enforcement ──────────────────────────────────────────────────
+// Reject any POST that isn't JSON before it reaches a route handler.
+app.use((req, res, next) => {
+  if (req.method === 'POST' && !req.is('application/json')) {
+    return res.status(415).json({ error: 'Content-Type must be application/json.' });
+  }
+  next();
+});
 
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 // ── Gemini Proxy ──────────────────────────────────────────────────────────────
 app.post('/api/extract', async (req, res) => {
+  const requestId = crypto.randomUUID();
+  res.setHeader('X-Request-Id', requestId);
+
   const { text } = req.body;
 
   if (!text || typeof text !== 'string') {
-    return res.status(400).json({ error: 'Request body must contain a "text" string.' });
+    return res.status(400).json({ error: 'Request body must contain a "text" string.', requestId });
+  }
+  if (text.trim().length < 20) {
+    return res.status(400).json({ error: 'Input too short to be a valid job posting.', requestId });
   }
   if (text.length > 10_000) {
-    return res.status(400).json({ error: 'Input too long (max 10 000 characters).' });
-  }
-  if (!process.env.GEMINI_API_KEY) {
-    console.error('[/api/extract] GEMINI_API_KEY is not set');
-    return res.status(500).json({ error: 'Server is not configured. Please set GEMINI_API_KEY.' });
+    return res.status(400).json({ error: 'Input too long (max 10 000 characters).', requestId });
   }
 
   try {
@@ -90,12 +118,12 @@ app.post('/api/extract', async (req, res) => {
 
     return res.json(JSON.parse(response.text));
   } catch (err) {
-    console.error('[/api/extract] Gemini error:', err?.message ?? err);
+    console.error(`[${requestId}] Gemini error:`, err?.message ?? err);
 
     if (err?.status === 429 || err?.message?.includes('quota')) {
-      return res.status(429).json({ error: 'AI quota exceeded. Try again later.' });
+      return res.status(429).json({ error: 'AI quota exceeded. Try again later.', requestId });
     }
-    return res.status(502).json({ error: 'AI service unavailable. Please try again later.' });
+    return res.status(502).json({ error: 'AI service unavailable. Please try again later.', requestId });
   }
 });
 

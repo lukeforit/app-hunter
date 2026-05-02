@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { extractJobFromText } from '../../../services/gemini';
 import { JobFormData, JobStatus } from '../../../types';
@@ -15,10 +15,12 @@ export const MagicPaste: React.FC<MagicPasteProps> = ({ onExtracted }) => {
   const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleExtract = async () => {
     if (!content.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const result = await extractJobFromText(content);
       onExtracted({
@@ -29,8 +31,7 @@ export const MagicPaste: React.FC<MagicPasteProps> = ({ onExtracted }) => {
       });
       setContent('');
     } catch (e) {
-      console.error(e);
-      alert(t('magicPaste.error'));
+      setError(e instanceof Error ? e.message : t('magicPaste.error'));
     } finally {
       setLoading(false);
     }
@@ -55,18 +56,19 @@ export const MagicPaste: React.FC<MagicPasteProps> = ({ onExtracted }) => {
           className={cn(
             "w-full h-36 bg-zinc-950/40 border border-zinc-800 rounded-xl p-4 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 resize-none font-mono transition-all",
             loading && "opacity-50 cursor-not-allowed",
-            !loading && "focus:bg-zinc-950/60"
+            !loading && "focus:bg-zinc-950/60",
+            error && "border-red-500/50"
           )}
           value={content}
           disabled={loading}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => { setContent(e.target.value); if (error) setError(null); }}
         />
         <div className="absolute bottom-3 right-3 flex items-center gap-2">
           {content.length > 0 && !loading && (
              <Button 
                variant="ghost" 
                size="sm" 
-               onClick={() => setContent('')}
+               onClick={() => { setContent(''); setError(null); }}
                className="text-[10px] uppercase font-bold px-2 py-1"
              >
                Clear
@@ -84,6 +86,12 @@ export const MagicPaste: React.FC<MagicPasteProps> = ({ onExtracted }) => {
           </Button>
         </div>
       </div>
+      {error && (
+        <p className="text-red-400 text-xs flex items-center gap-1.5">
+          <AlertTriangle className="w-3 h-3 shrink-0" />
+          {error}
+        </p>
+      )}
     </div>
   );
 };

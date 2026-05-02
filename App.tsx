@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useJobs } from './hooks/useJobs';
 import { useFilteredJobs } from './hooks/useFilteredJobs';
@@ -33,6 +33,14 @@ const App: React.FC = () => {
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Auto-dismiss toast after 4 s
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(id);
+  }, [toast]);
 
   const handleStatusChange = useCallback((id: string, status: JobStatus) => {
     updateJob(id, { status });
@@ -89,7 +97,11 @@ const App: React.FC = () => {
         onExport={() => exportJobs(jobs)}
         onImportClick={() => fileInputRef.current?.click()}
         fileInputRef={fileInputRef}
-        onFileChange={(e) => importJobsFromFile(e, importJobs)}
+        onFileChange={(e) => importJobsFromFile(
+            e,
+            (data) => { importJobs(data); setToast({ message: t('common.importSuccess'), type: 'success' }); },
+            (msg)  => setToast({ message: msg, type: 'error' })
+          )}
       />
 
       <main className="max-w-6xl mx-auto px-6 py-10 space-y-8">
@@ -149,6 +161,21 @@ const App: React.FC = () => {
       />
 
       <Footer />
+
+      {/* Toast notification */}
+      {toast && (
+        <div
+          role="alert"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl text-sm font-medium transition-all ${
+            toast.type === 'error'
+              ? 'bg-red-950 border border-red-500/40 text-red-300'
+              : 'bg-zinc-800 border border-zinc-700 text-zinc-100'
+          }`}
+        >
+          {toast.message}
+          <button onClick={() => setToast(null)} className="text-xs opacity-50 hover:opacity-100 transition-opacity ml-1">✕</button>
+        </div>
+      )}
     </div>
   );
 };
