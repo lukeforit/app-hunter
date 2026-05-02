@@ -43,13 +43,15 @@ app.use(cors({
 }));
 
 // ── Rate Limiting ─────────────────────────────────────────────────────────────
-// 20 requests per minute per IP — tune to your Gemini quota
+// 10 requests per minute per IP — Gemini calls are expensive, keep this tight.
+// Health checks are exempted so monitoring tools never trip the limiter.
 const limiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 20,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests. Please wait a moment before retrying.' },
+  message: { error: 'Too many requests. Please wait before retrying.' },
+  skip: (req) => req.path === '/api/health',
 });
 app.use('/api/', limiter);
 
