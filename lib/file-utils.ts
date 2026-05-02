@@ -14,7 +14,8 @@ export const exportJobs = (jobs: JobEntry[]) => {
 
 export const importJobsFromFile = (
   e: React.ChangeEvent<HTMLInputElement>,
-  onSuccess: (data: JobEntry[]) => void
+  onSuccess: (data: JobEntry[]) => void,
+  onError: (msg: string) => void
 ) => {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -25,15 +26,15 @@ export const importJobsFromFile = (
       const data = JSON.parse(ev.target?.result as string);
       if (Array.isArray(data)) {
         onSuccess(data);
-        alert(i18n.t('common.importSuccess'));
+        // Success feedback is handled by the caller (e.g. a toast notification).
       } else {
         throw new Error('Invalid format');
       }
-    } catch (err) {
-      alert(i18n.t('common.importError'));
+    } catch {
+      onError(i18n.t('common.importError'));
     }
   };
   reader.readAsText(file);
-  // Reset value to allow selecting same file again
+  // Reset value so the same file can be selected again.
   e.target.value = '';
 };
