@@ -5,7 +5,7 @@ import { Sparkles, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { extractJobFromText } from '../../../services/gemini';
 import { JobFormData, JobStatus } from '../../../types';
-import { cn } from '../../../lib/utils';
+import { cn, sanitizeUrl } from '../../../lib/utils';
 
 interface MagicPasteProps {
   onExtracted: (data: JobFormData) => void;
@@ -27,7 +27,7 @@ export const MagicPaste: React.FC<MagicPasteProps> = ({ onExtracted }) => {
         ...result,
         dateApplied: new Date().toISOString().split('T')[0],
         status: JobStatus.SENT,
-        link: result.link || ''
+        link: sanitizeUrl(result.link)
       });
       setContent('');
     } catch (e) {

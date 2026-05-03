@@ -18,3 +18,31 @@ export function formatDate(dateStr: string) {
     year: 'numeric',
   });
 }
+
+export function sanitizeUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+
+  // Prevent java\nscript: by stripping whitespace that could confuse parsers
+  const withoutWhitespace = trimmed.replace(/[\n\r\t]/g, '');
+
+  try {
+    const parsed = new URL(withoutWhitespace);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString();
+    }
+    return '';
+  } catch (e) {
+    // If parsing fails, and it doesn't have a protocol, assume https
+    if (!/^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(withoutWhitespace)) {
+        try {
+            const httpsUrl = new URL(`https://${withoutWhitespace}`);
+            return httpsUrl.toString();
+        } catch (err) {
+            return '';
+        }
+    }
+    return '';
+  }
+}

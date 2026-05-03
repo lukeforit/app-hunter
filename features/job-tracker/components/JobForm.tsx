@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Button } from '../../../components/ui/Button';
+import { sanitizeUrl } from '../../../lib/utils';
 
 interface JobFormProps {
   initialData?: JobEntry | null;
@@ -23,7 +24,11 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(data);
+    const sanitizedData = {
+      ...data,
+      link: sanitizeUrl(data.link)
+    };
+    onSubmit(sanitizedData);
   };
 
   const getStatusLabel = (status: JobStatus) => {
@@ -109,6 +114,7 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
           type="url"
           value={data.link || ''}
           onChange={e => setData({ ...data, link: e.target.value })}
+          onBlur={e => setData({ ...data, link: sanitizeUrl(e.target.value) })}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none"
           placeholder="https://..."
         />
