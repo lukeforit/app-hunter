@@ -31,8 +31,7 @@ const allowedOrigins = ALLOWED_ORIGIN.split(',').map(o => o.trim());
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (server-to-server, curl)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error(`CORS: Origin '${origin}' is not allowed`));
