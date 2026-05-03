@@ -68,26 +68,17 @@ const App: React.FC = () => {
   }, []);
 
   // Options for filter UI
-  const statusOptions = useMemo(() =>
-    (Object.values(JobStatus) as JobStatus[]).map(s => ({
-      value: s,
-      label: t(`common.${s.toLowerCase()}`)
-    }))
-    , [t]);
+  const statusOptions = useMemo(() => [
+    { value: JobStatus.SENT, label: t('common.sent') },
+    { value: JobStatus.INTERVIEWING, label: t('common.interviewing') },
+    { value: JobStatus.REJECTED, label: t('common.rejected') },
+  ], [t]);
 
-  const workModeOptions = useMemo(() =>
-    (Object.values(WorkMode) as WorkMode[]).map(m => {
-      const keyMap: Record<string, string> = {
-        [WorkMode.ON_SITE]: 'onSite',
-        [WorkMode.REMOTE]: 'remote',
-        [WorkMode.HYBRID]: 'hybrid',
-      };
-      return {
-        value: m,
-        label: t(`common.${keyMap[m]}`)
-      };
-    })
-    , [t]);
+  const workModeOptions = useMemo(() => [
+    { value: WorkMode.ON_SITE, label: t('common.onSite') },
+    { value: WorkMode.REMOTE, label: t('common.remote') },
+    { value: WorkMode.HYBRID, label: t('common.hybrid') },
+  ], [t]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-zinc-800/50">
