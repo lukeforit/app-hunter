@@ -6,6 +6,7 @@ import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { formatDate, cn } from '../../../lib/utils';
+import { isSafeUrl } from '../lib/url';
 
 interface JobCardProps {
   job: JobEntry;
@@ -38,8 +39,10 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
 
   const handleOpenLink = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (job.link) {
+    if (job.link && isSafeUrl(job.link)) {
       window.open(job.link, '_blank', 'noopener,noreferrer');
+    } else if (job.link) {
+      console.warn('Blocked opening unsafe URL:', job.link);
     }
   };
 
