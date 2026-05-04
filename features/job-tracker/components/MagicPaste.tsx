@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
-import { extractJobFromText } from '../../../services/gemini';
+import { extractJobFromText } from '../../../services/ApiService';
 import { JobFormData, JobStatus } from '../../../types';
 import { cn, sanitizeUrl } from '../../../lib/utils';
 
