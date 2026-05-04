@@ -136,6 +136,9 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
 curl_setopt($ch, CURLOPT_FAILONERROR, false);
+curl_setopt($ch, CURLOPT_TIMEOUT, 25); // Set timeout to avoid nginx 504 gateway timeout
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); // Force IPv4 to fix Plesk timeout issues
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -144,7 +147,7 @@ curl_close($ch);
 
 if ($error) {
     http_response_code(502);
-    echo json_encode(['error' => 'AI service unavailable. Please try again later.']);
+    echo json_encode(['error' => 'AI service unavailable. cURL Error: ' . $error]);
     exit;
 }
 
@@ -155,8 +158,15 @@ if ($httpCode >= 400) {
          exit;
     }
     http_response_code(502);
-    // You could output $response here for debugging if needed, but safe message for production
-    echo json_encode(['error' => 'AI service unavailable. Please try again later.']);
+    
+    // Attempt to parse the Gemini error message if available
+    $errorMsg = 'AI service unavailable. HTTP Code: ' . $httpCode;
+    $decodedResponse = json_decode($response, true);
+    if (isset($decodedResponse['error']['message'])) {
+        $errorMsg .= ' Details: ' . $decodedResponse['error']['message'];
+    }
+    
+    echo json_encode(['error' => $errorMsg]);
     exit;
 }
 

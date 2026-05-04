@@ -14,28 +14,28 @@ async function fetchWithRetryAndFallback(
   try {
     for (let attempt = 0; attempt <= retries; attempt++) {
       const res = await fetch(primaryUrl, options);
-      
+
       // If successful, return immediately
       if (res.ok) return res;
-      
+
       // If it's a 503 (transient error), retry
       if (res.status === 503 && attempt < retries) {
         await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
         continue;
       }
-      
+
       // If the Node.js endpoint is missing (404) or bad gateway (502) or exhausted 503s, 
       // trigger the fallback by throwing an error
       if (res.status === 404 || res.status === 502 || res.status === 503) {
         throw new Error(`Primary endpoint failed with status ${res.status}`);
       }
-      
+
       // For client errors (400, 429), return response so the caller can display the error
       return res;
     }
   } catch (error) {
     console.warn(`[ApiService] Primary endpoint (${primaryUrl}) unavailable. Falling back to ${fallbackUrl}.`, error);
-    
+
     // 2. Fallback to PHP Proxy endpoint
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
@@ -49,7 +49,7 @@ async function fetchWithRetryAndFallback(
       }
     }
   }
-  
+
   throw new Error('All API endpoints failed.');
 }
 
