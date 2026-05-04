@@ -100,7 +100,7 @@ if (strlen($text) > 10000) {
 }
 
 // 4. Construct Gemini API Request
-$geminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $apiKey;
+$geminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $apiKey;
 
 $payload = [
     "systemInstruction" => [

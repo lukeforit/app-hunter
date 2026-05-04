@@ -89,7 +89,7 @@ app.post('/api/extract', async (req, res) => {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       contents: `Extract job details from this text or URL. Return JSON.\n\nSource Content:\n${text}`,
       config: {
         systemInstruction: `You are a high-precision recruitment data extractor.
@@ -104,11 +104,11 @@ app.post('/api/extract', async (req, res) => {
           type: Type.OBJECT,
           properties: {
             companyName: { type: Type.STRING },
-            role:        { type: Type.STRING },
-            location:    { type: Type.STRING },
-            workMode:    { type: Type.STRING, enum: ['On-site', 'Remote', 'Hybrid'] },
-            link:        { type: Type.STRING },
-            salary:      { type: Type.STRING },
+            role: { type: Type.STRING },
+            location: { type: Type.STRING },
+            workMode: { type: Type.STRING, enum: ['On-site', 'Remote', 'Hybrid'] },
+            link: { type: Type.STRING },
+            salary: { type: Type.STRING },
           },
           required: ['companyName', 'role', 'location', 'workMode'],
         },
