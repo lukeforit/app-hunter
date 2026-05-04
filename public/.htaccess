@@ -1,0 +1,13 @@
+# Secure application files
+<FilesMatch "^\.env(.*)?$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "\.(ts|tsx|json|md)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent access to hidden files and directories (like .git, .env)
+RedirectMatch 404 /\.
