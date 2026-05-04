@@ -5,13 +5,15 @@
  */
 
 // 1. Function to parse .env file
-function loadEnv($path) {
+function loadEnv($path)
+{
     if (!file_exists($path)) {
         return false;
     }
     $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos(trim($line), '#') === 0)
+            continue;
         if (strpos($line, '=') !== false) {
             list($name, $value) = explode('=', $line, 2);
             $name = trim($name);
@@ -58,6 +60,7 @@ if (in_array($origin, $allowedOrigins)) {
 
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
+header("X-Proxy-Version: 2.0"); // Added so we can verify if Plesk is running the new version
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -118,11 +121,11 @@ $payload = [
             "type" => "OBJECT",
             "properties" => [
                 "companyName" => ["type" => "STRING"],
-                "role"        => ["type" => "STRING"],
-                "location"    => ["type" => "STRING"],
-                "workMode"    => ["type" => "STRING", "enum" => ["On-site", "Remote", "Hybrid"]],
-                "link"        => ["type" => "STRING"],
-                "salary"      => ["type" => "STRING"]
+                "role" => ["type" => "STRING"],
+                "location" => ["type" => "STRING"],
+                "workMode" => ["type" => "STRING", "enum" => ["On-site", "Remote", "Hybrid"]],
+                "link" => ["type" => "STRING"],
+                "salary" => ["type" => "STRING"]
             ],
             "required" => ["companyName", "role", "location", "workMode"]
         ]
@@ -136,9 +139,9 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
 curl_setopt($ch, CURLOPT_FAILONERROR, false);
-curl_setopt($ch, CURLOPT_TIMEOUT, 25); // Set timeout to avoid nginx 504 gateway timeout
-curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); // Force IPv4 to fix Plesk timeout issues
+curl_setopt($ch, CURLOPT_NOSIGNAL, 1); // Fix for DNS resolution timeouts in some PHP environments
+curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Strict 15s timeout to stay well under Nginx 60s limit
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20); // 10s connection timeout
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -146,6 +149,7 @@ $error = curl_error($ch);
 curl_close($ch);
 
 if ($error) {
+    error_log("cURL Error in proxy.php: " . $error);
     http_response_code(502);
     echo json_encode(['error' => 'AI service unavailable. cURL Error: ' . $error]);
     exit;
@@ -153,19 +157,19 @@ if ($error) {
 
 if ($httpCode >= 400) {
     if ($httpCode === 429) {
-         http_response_code(429);
-         echo json_encode(['error' => 'AI quota exceeded. Try again later.']);
-         exit;
+        http_response_code(429);
+        echo json_encode(['error' => 'AI quota exceeded. Try again later.']);
+        exit;
     }
     http_response_code(502);
-    
+
     // Attempt to parse the Gemini error message if available
     $errorMsg = 'AI service unavailable. HTTP Code: ' . $httpCode;
     $decodedResponse = json_decode($response, true);
     if (isset($decodedResponse['error']['message'])) {
         $errorMsg .= ' Details: ' . $decodedResponse['error']['message'];
     }
-    
+
     echo json_encode(['error' => $errorMsg]);
     exit;
 }
