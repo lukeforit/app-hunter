@@ -109,6 +109,10 @@ In production the Express server also serves the `/dist` folder as static files.
 
 Set `NODE_ENV=production` and your live `ALLOWED_ORIGIN` in the production environment before starting.
 
+### PHP Fallback (No Node.js)
+If your backend hosting environment (e.g., shared hosting like Plesk) does not support running a Node.js process, a `proxy.php` file is provided as a fallback.
+The application will automatically attempt to use `proxy.php` if the `/api/extract` Node.js endpoint fails. Ensure that your `.env` file containing `GEMINI_API_KEY` and `ALLOWED_ORIGIN` is accessible by the PHP script.
+
 ## 📂 Data Schema
 
 Each job entry follows this structure:
