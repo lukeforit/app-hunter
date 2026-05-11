@@ -19,6 +19,7 @@ if (!process.env.ALLOWED_ORIGIN) {
 }
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (required for rate limiting behind load balancers/reverse proxies)
 const PORT = process.env.PORT || 3001;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 const __dirname = dirname(fileURLToPath(import.meta.url));
