@@ -23,19 +23,30 @@ export function useJobs() {
     setIsLoaded(true);
   }, []);
 
+  // Ref to hold the timeout ID for debouncing saves
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Save jobs only after initial load to prevent overwriting with empty array
+  // Use debouncing to prevent excessive synchronous I/O on rapid state updates
   useEffect(() => {
     if (isLoaded) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
-      } catch (e) {
-        if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-          console.error("Critical: localStorage quota exceeded. Export your data immediately to avoid loss!");
-        } else {
-          console.error("Failed to save jobs to localStorage:", e);
-        }
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
+
+      saveTimeoutRef.current = setTimeout(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+        } catch (e) {
+          if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+            console.error("Critical: localStorage quota exceeded. Export your data immediately to avoid loss!");
+          } else {
+            console.error("Failed to save jobs to localStorage:", e);
+          }
+        }
+      }, 500); // 500ms debounce
     }
+
   }, [jobs, isLoaded]);
 
   const addJob = useCallback((data: JobFormData) => {
