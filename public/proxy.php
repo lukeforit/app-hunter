@@ -151,7 +151,7 @@ curl_close($ch);
 if ($error) {
     error_log("cURL Error in proxy.php: " . $error);
     http_response_code(502);
-    echo json_encode(['error' => 'AI service unavailable. cURL Error: ' . $error]);
+    echo json_encode(['error' => 'AI service unavailable. Please try again later.']);
     exit;
 }
 
