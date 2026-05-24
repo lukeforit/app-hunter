@@ -17,9 +17,10 @@ export function useFilteredJobs(jobs: JobEntry[]) {
   }, [searchQuery]);
 
   const filteredJobs = useMemo(() => {
+    const searchLower = debouncedSearchQuery.toLowerCase();
     return jobs.filter(j => {
       const matchesSearch = [j.companyName, j.role, j.location].some(f => 
-        (f || '').toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+        (f || '').toLowerCase().includes(searchLower)
       );
       const matchesStatus = statusFilter === null || j.status === statusFilter;
       const matchesWorkMode = workModeFilter === null || j.workMode === workModeFilter;

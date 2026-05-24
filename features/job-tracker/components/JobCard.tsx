@@ -6,6 +6,7 @@ import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { formatDate, cn } from '../../../lib/utils';
+import { getStatusLabel, getWorkModeLabel } from '../../../lib/formatters';
 import { isSafeUrl } from '../lib/url';
 
 const JOB_STATUSES = Object.values(JobStatus);
@@ -20,24 +21,6 @@ interface JobCardProps {
 
 export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }: JobCardProps) => {
   const { t } = useTranslation();
-
-  const getStatusLabel = (status: JobStatus) => {
-    switch (status) {
-      case JobStatus.SENT: return t('common.sent');
-      case JobStatus.INTERVIEWING: return t('common.interviewing');
-      case JobStatus.REJECTED: return t('common.rejected');
-      default: return status;
-    }
-  };
-
-  const getWorkModeLabel = (mode: WorkMode) => {
-    switch (mode) {
-      case WorkMode.REMOTE: return t('common.remote');
-      case WorkMode.ON_SITE: return t('common.onSite');
-      case WorkMode.HYBRID: return t('common.hybrid');
-      default: return mode;
-    }
-  };
 
   const handleOpenLink = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -67,7 +50,7 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
               {job.role}
             </p>
           </div>
-          {!compact && <Badge variant={job.status}>{getStatusLabel(job.status)}</Badge>}
+          {!compact && <Badge variant={job.status}>{getStatusLabel(job.status, t)}</Badge>}
         </div>
 
         {!compact && (
@@ -75,7 +58,7 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
             <div className="flex flex-wrap gap-y-1 gap-x-4">
               <div className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-zinc-600" />
-                {job.location} • {getWorkModeLabel(job.workMode)}
+                {job.location} • {getWorkModeLabel(job.workMode, t)}
               </div>
               {job.salary && (
                 <div className="flex items-center gap-1.5 text-emerald-500/90 bg-emerald-500/5 px-1.5 py-0.5 rounded-md border border-emerald-500/10">
@@ -125,7 +108,7 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
           </Button>
         </div>
 
-        {compact && <Badge variant={job.status}>{getStatusLabel(job.status)}</Badge>}
+        {compact && <Badge variant={job.status}>{getStatusLabel(job.status, t)}</Badge>}
 
         {!compact && (
           <>
@@ -136,7 +119,7 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
               className="bg-zinc-800/50 text-[10px] font-bold border-none rounded-lg px-2.5 py-1.5 text-zinc-400 focus:ring-1 focus:ring-zinc-700 outline-none cursor-pointer hover:text-white transition-all"
             >
               {JOB_STATUSES.map(s => (
-                <option key={s} value={s}>{getStatusLabel(s)}</option>
+                <option key={s} value={s}>{getStatusLabel(s, t)}</option>
               ))}
             </select>
           </>
