@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useJobs } from './hooks/useJobs';
 import { useFilteredJobs } from './hooks/useFilteredJobs';
+import { useToast } from './hooks/useToast';
 import { JobCard } from './features/job-tracker/components/JobCard';
 import { EmptyState } from './features/job-tracker/components/EmptyState';
 import { ActionBar } from './features/job-tracker/sections/ActionBar';
@@ -33,14 +34,7 @@ const App: React.FC = () => {
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-
-  // Auto-dismiss toast after 4 s
-  useEffect(() => {
-    if (!toast) return;
-    const id = setTimeout(() => setToast(null), 4000);
-    return () => clearTimeout(id);
-  }, [toast]);
+  const { toast, showToast, hideToast } = useToast();
 
   const handleStatusChange = useCallback((id: string, status: JobStatus) => {
     updateJob(id, { status });
@@ -90,8 +84,8 @@ const App: React.FC = () => {
         fileInputRef={fileInputRef}
         onFileChange={(e) => importJobsFromFile(
             e,
-            (data) => { importJobs(data); setToast({ message: t('common.importSuccess'), type: 'success' }); },
-            (msg)  => setToast({ message: msg, type: 'error' })
+            (data) => { importJobs(data); showToast(t('common.importSuccess'), 'success'); },
+            (msg)  => showToast(msg, 'error')
           )}
       />
 
@@ -164,7 +158,7 @@ const App: React.FC = () => {
           }`}
         >
           {toast.message}
-          <button onClick={() => setToast(null)} className="text-xs opacity-50 hover:opacity-100 transition-opacity ml-1">✕</button>
+          <button onClick={hideToast} className="text-xs opacity-50 hover:opacity-100 transition-opacity ml-1">✕</button>
         </div>
       )}
     </div>
