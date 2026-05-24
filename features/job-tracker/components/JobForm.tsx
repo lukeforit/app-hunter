@@ -4,6 +4,8 @@ import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Button } from '../../../components/ui/Button';
 import { sanitizeUrl } from '../../../lib/utils';
 
+const WORK_MODES = Object.values(WorkMode);
+
 interface JobFormProps {
   initialData?: JobEntry | null;
   onSubmit: (data: Partial<JobEntry>) => void;
@@ -96,7 +98,7 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
           onChange={e => setData({ ...data, workMode: e.target.value as WorkMode })}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none"
         >
-          {Object.values(WorkMode).map(m => <option key={m} value={m}>{getWorkModeLabel(m)}</option>)}
+          {WORK_MODES.map(m => <option key={m} value={m}>{getWorkModeLabel(m)}</option>)}
         </select>
       </div>
       <div className="space-y-1.5">
