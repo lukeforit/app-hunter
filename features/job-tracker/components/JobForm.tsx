@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Button } from '../../../components/ui/Button';
 import { sanitizeUrl } from '../../../lib/utils';
+import { getStatusLabel, getWorkModeLabel } from '../../../lib/formatters';
 
 interface JobFormProps {
   initialData?: JobEntry | null;
@@ -29,24 +30,6 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
       link: sanitizeUrl(data.link)
     };
     onSubmit(sanitizedData);
-  };
-
-  const getStatusLabel = (status: JobStatus) => {
-    switch (status) {
-      case JobStatus.SENT: return t('common.sent');
-      case JobStatus.INTERVIEWING: return t('common.interviewing');
-      case JobStatus.REJECTED: return t('common.rejected');
-      default: return status;
-    }
-  };
-
-  const getWorkModeLabel = (mode: WorkMode) => {
-    switch (mode) {
-      case WorkMode.REMOTE: return t('common.remote');
-      case WorkMode.ON_SITE: return t('common.onSite');
-      case WorkMode.HYBRID: return t('common.hybrid');
-      default: return mode;
-    }
   };
 
   return (
@@ -96,7 +79,7 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
           onChange={e => setData({ ...data, workMode: e.target.value as WorkMode })}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none"
         >
-          {Object.values(WorkMode).map(m => <option key={m} value={m}>{getWorkModeLabel(m)}</option>)}
+          {Object.values(WorkMode).map(m => <option key={m} value={m}>{getWorkModeLabel(m, t)}</option>)}
         </select>
       </div>
       <div className="space-y-1.5">
