@@ -8,6 +8,8 @@ import { Button } from '../../../components/ui/Button';
 import { formatDate, cn } from '../../../lib/utils';
 import { isSafeUrl } from '../lib/url';
 
+const JOB_STATUSES = Object.values(JobStatus);
+
 interface JobCardProps {
   job: JobEntry;
   compact?: boolean;
@@ -133,7 +135,7 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
               onChange={(e) => onStatusChange(job.id, e.target.value as JobStatus)}
               className="bg-zinc-800/50 text-[10px] font-bold border-none rounded-lg px-2.5 py-1.5 text-zinc-400 focus:ring-1 focus:ring-zinc-700 outline-none cursor-pointer hover:text-white transition-all"
             >
-              {Object.values(JobStatus).map(s => (
+              {JOB_STATUSES.map(s => (
                 <option key={s} value={s}>{getStatusLabel(s)}</option>
               ))}
             </select>
