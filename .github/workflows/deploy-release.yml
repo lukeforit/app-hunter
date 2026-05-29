@@ -4,6 +4,8 @@ on:
   pull_request:
     types:
       - closed
+    branches:
+      - main
 
 jobs:
   deploy-release:
@@ -45,10 +47,5 @@ jobs:
           gh release create ${{ env.VERSION }} \
             --title "Release ${{ env.VERSION }}" \
             --generate-notes \
-            --target main
-
-      - name: Upload Build Artifacts to Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload ${{ env.VERSION }} the-hunter-build-${{ env.VERSION }}.zip
+            --target ${{ github.sha }} \
+            the-hunter-build-${{ env.VERSION }}.zip
