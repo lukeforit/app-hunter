@@ -1,7 +1,7 @@
 {
   "name": "the-hunter---job-tracker",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "concurrently --names \"vite,server\" --prefix-colors \"cyan,yellow\" \"vite\" \"node server/index.js\"",
