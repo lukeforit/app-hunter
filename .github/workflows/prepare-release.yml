@@ -1,0 +1,57 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Type of version bump'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Using Node 22 as specified in memory
+
+      - name: Bump version
+        run: |
+          npm version ${{ github.event.inputs.bump_type }} --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Create branch, commit and push
+        run: |
+          git checkout -b release/v${VERSION}
+          git add package.json package-lock.json || true
+          git commit -m "chore: release v${VERSION}"
+          git push origin release/v${VERSION}
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "Release v${VERSION}" \
+            --body "Automated release PR for version v${VERSION}. Triggered by workflow_dispatch." \
+            --base main \
+            --head release/v${VERSION}
