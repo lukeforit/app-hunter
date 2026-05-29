@@ -21,7 +21,7 @@ if (!global.crypto) {
 }
 if (!global.crypto.randomUUID) {
   let counter = 0;
-  global.crypto.randomUUID = () => `test-uuid-${counter++}`;
+  global.crypto.randomUUID = () => `test-uuid-${counter++}` as any;
 }
 
 const STORAGE_KEY = 'the_hunter_jobs_v2';
@@ -54,7 +54,7 @@ describe('useJobs', () => {
     mock.timers.enable({ apis: ['setTimeout'] });
     // Reset uuid counter
     let counter = 0;
-    global.crypto.randomUUID = () => `test-uuid-${counter++}`;
+    global.crypto.randomUUID = () => `test-uuid-${counter++}` as any;
   });
 
   afterEach(() => {
