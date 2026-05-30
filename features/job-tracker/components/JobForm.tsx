@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Button } from '../../../components/ui/Button';
@@ -24,6 +24,10 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
     dateApplied: new Date().toISOString().split('T')[0],
     salary: ''
   });
+
+  const workModeOptions = useMemo(() =>
+    WORK_MODES.map(m => <option key={m} value={m}>{getWorkModeLabel(m, t)}</option>),
+  [t]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +85,7 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
           onChange={e => setData({ ...data, workMode: e.target.value as WorkMode })}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none"
         >
-          {WORK_MODES.map(m => <option key={m} value={m}>{getWorkModeLabel(m, t)}</option>)}
+          {workModeOptions}
         </select>
       </div>
       <div className="space-y-1.5">
