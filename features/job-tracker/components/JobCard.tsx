@@ -1,5 +1,5 @@
 
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Calendar, Link2, Trash2, Pencil, Banknote } from 'lucide-react';
 import { JobEntry, JobStatus, WorkMode } from '../../../types';
@@ -21,10 +21,6 @@ interface JobCardProps {
 
 export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }: JobCardProps) => {
   const { t } = useTranslation();
-
-  const statusOptions = useMemo(() =>
-    JOB_STATUSES.map(s => <option key={s} value={s}>{getStatusLabel(s, t)}</option>),
-  [t]);
 
   const handleOpenLink = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -122,7 +118,9 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
               onChange={(e) => onStatusChange(job.id, e.target.value as JobStatus)}
               className="bg-zinc-800/50 text-[10px] font-bold border-none rounded-lg px-2.5 py-1.5 text-zinc-400 focus:ring-1 focus:ring-zinc-700 outline-none cursor-pointer hover:text-white transition-all"
             >
-              {statusOptions}
+              {JOB_STATUSES.map(s => (
+                <option key={s} value={s}>{getStatusLabel(s, t)}</option>
+              ))}
             </select>
           </>
         )}
