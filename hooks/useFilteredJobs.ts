@@ -17,30 +17,33 @@ export function useFilteredJobs(jobs: JobEntry[]) {
   }, [searchQuery]);
 
   const filteredJobs = useMemo(() => {
-    // Return early if there are no jobs to avoid unnecessary computation
-    if (!jobs || jobs.length === 0) return [];
+    if (!jobs?.length) {
+      return jobs || [];
+    }
 
-    const searchLower = debouncedSearchQuery.toLowerCase();
+    const searchLower = debouncedSearchQuery.toLowerCase().trim();
 
-    // If no filters are active, return the original array
     if (!searchLower && statusFilter === null && workModeFilter === null) {
       return jobs;
     }
 
-    return jobs.filter(j => {
-      // 1. Check inexpensive exact-match filters first
-      if (statusFilter !== null && j.status !== statusFilter) return false;
-      if (workModeFilter !== null && j.workMode !== workModeFilter) return false;
+    return jobs.filter((job) => {
+      const matchesStatus = statusFilter === null || job.status === statusFilter;
+      const matchesWorkMode = workModeFilter === null || job.workMode === workModeFilter;
 
-      // 2. Check expensive string matches last
-      if (searchLower) {
-        if ((j.companyName || '').toLowerCase().includes(searchLower)) return true;
-        if ((j.role || '').toLowerCase().includes(searchLower)) return true;
-        if ((j.location || '').toLowerCase().includes(searchLower)) return true;
+      if (!matchesStatus || !matchesWorkMode) {
         return false;
       }
-      
-      return true;
+
+      if (!searchLower) {
+        return true;
+      }
+
+      return (
+        (job.companyName || '').toLowerCase().includes(searchLower) ||
+        (job.role || '').toLowerCase().includes(searchLower) ||
+        (job.location || '').toLowerCase().includes(searchLower)
+      );
     });
   }, [jobs, debouncedSearchQuery, statusFilter, workModeFilter]);
 
