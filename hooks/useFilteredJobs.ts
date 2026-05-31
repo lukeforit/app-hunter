@@ -17,15 +17,33 @@ export function useFilteredJobs(jobs: JobEntry[]) {
   }, [searchQuery]);
 
   const filteredJobs = useMemo(() => {
-    const searchLower = debouncedSearchQuery.toLowerCase();
-    return jobs.filter(j => {
-      const matchesSearch = [j.companyName, j.role, j.location].some(f => 
-        (f || '').toLowerCase().includes(searchLower)
+    if (!jobs?.length) {
+      return jobs || [];
+    }
+
+    const searchLower = debouncedSearchQuery.toLowerCase().trim();
+
+    if (!searchLower && statusFilter === null && workModeFilter === null) {
+      return jobs;
+    }
+
+    return jobs.filter((job) => {
+      const matchesStatus = statusFilter === null || job.status === statusFilter;
+      const matchesWorkMode = workModeFilter === null || job.workMode === workModeFilter;
+
+      if (!matchesStatus || !matchesWorkMode) {
+        return false;
+      }
+
+      if (!searchLower) {
+        return true;
+      }
+
+      return (
+        (job.companyName || '').toLowerCase().includes(searchLower) ||
+        (job.role || '').toLowerCase().includes(searchLower) ||
+        (job.location || '').toLowerCase().includes(searchLower)
       );
-      const matchesStatus = statusFilter === null || j.status === statusFilter;
-      const matchesWorkMode = workModeFilter === null || j.workMode === workModeFilter;
-      
-      return matchesSearch && matchesStatus && matchesWorkMode;
     });
   }, [jobs, debouncedSearchQuery, statusFilter, workModeFilter]);
 
