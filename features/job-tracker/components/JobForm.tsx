@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { JobEntry, JobStatus, WorkMode } from '../../../types';
 import { Button } from '../../../components/ui/Button';
@@ -14,7 +14,27 @@ interface JobFormProps {
 
 export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
   const { t } = useTranslation();
-  const [data, setData] = useState<Partial<JobEntry>>(initialData || {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    const submittedData: Partial<JobEntry> = {
+      role: formData.get('role') as string,
+      companyName: formData.get('companyName') as string,
+      location: formData.get('location') as string,
+      salary: formData.get('salary') as string,
+      workMode: formData.get('workMode') as WorkMode,
+      dateApplied: formData.get('dateApplied') as string,
+      link: sanitizeUrl(formData.get('link') as string),
+      status: initialData?.status || JobStatus.SENT
+    };
+
+    onSubmit(submittedData);
+  };
+
+  const defaultValues = initialData || {
     companyName: '',
     role: '',
     location: '',
@@ -23,25 +43,16 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
     status: JobStatus.SENT,
     dateApplied: new Date().toISOString().split('T')[0],
     salary: ''
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const sanitizedData = {
-      ...data,
-      link: sanitizeUrl(data.link)
-    };
-    onSubmit(sanitizedData);
   };
 
   return (
-    <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
+    <form ref={formRef} className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
       <div className="col-span-2 space-y-1.5">
         <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.role')}</label>
         <input
+          name="role"
           required
-          value={data.role || ''}
-          onChange={e => setData({ ...data, role: e.target.value })}
+          defaultValue={defaultValues.role}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none"
           placeholder="Frontend Engineer"
         />
@@ -49,9 +60,9 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.company')}</label>
         <input
+          name="companyName"
           required
-          value={data.companyName || ''}
-          onChange={e => setData({ ...data, companyName: e.target.value })}
+          defaultValue={defaultValues.companyName}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none"
           placeholder="Linear"
         />
@@ -59,8 +70,8 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.location')}</label>
         <input
-          value={data.location || ''}
-          onChange={e => setData({ ...data, location: e.target.value })}
+          name="location"
+          defaultValue={defaultValues.location}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none"
           placeholder="Remote"
         />
@@ -68,8 +79,8 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.salary')}</label>
         <input
-          value={data.salary || ''}
-          onChange={e => setData({ ...data, salary: e.target.value })}
+          name="salary"
+          defaultValue={defaultValues.salary}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-zinc-600 outline-none"
           placeholder="$150,000"
         />
@@ -77,8 +88,8 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.mode')}</label>
         <select
-          value={data.workMode}
-          onChange={e => setData({ ...data, workMode: e.target.value as WorkMode })}
+          name="workMode"
+          defaultValue={defaultValues.workMode}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none"
         >
           {WORK_MODES.map(m => <option key={m} value={m}>{getWorkModeLabel(m, t)}</option>)}
@@ -87,19 +98,19 @@ export const JobForm: React.FC<JobFormProps> = ({ initialData, onSubmit }) => {
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.date')}</label>
         <input
+          name="dateApplied"
           type="date"
-          value={data.dateApplied}
-          onChange={e => setData({ ...data, dateApplied: e.target.value })}
+          defaultValue={defaultValues.dateApplied}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none [color-scheme:dark]"
         />
       </div>
       <div className="col-span-2 space-y-1.5">
         <label className="text-[10px] font-bold text-zinc-500 uppercase">{t('fields.link')}</label>
         <input
+          name="link"
           type="url"
-          value={data.link || ''}
-          onChange={e => setData({ ...data, link: e.target.value })}
-          onBlur={e => setData({ ...data, link: sanitizeUrl(e.target.value) })}
+          defaultValue={defaultValues.link}
+          onBlur={e => e.target.value = sanitizeUrl(e.target.value)}
           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm outline-none"
           placeholder="https://..."
         />
