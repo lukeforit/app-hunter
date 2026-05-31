@@ -1,5 +1,5 @@
 
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Calendar, Link2, Trash2, Pencil, Banknote } from 'lucide-react';
 import { JobEntry, JobStatus, WorkMode } from '../../../types';
@@ -30,12 +30,6 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
       console.warn('Blocked opening unsafe URL:', job.link);
     }
   };
-
-  const statusOptions = useMemo(() => (
-    JOB_STATUSES.map(s => (
-      <option key={s} value={s}>{getStatusLabel(s, t)}</option>
-    ))
-  ), [t]);
 
   return (
     <div className={cn(
@@ -84,29 +78,29 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
       <div className={cn("flex items-center gap-4", compact ? 'mt-0' : 'mt-1 pt-2 border-t border-zinc-800/50')}>
         <div className="flex items-center gap-1">
           {job.link && (
-            <Button 
-              variant="blue" 
-              size="icon" 
-              onClick={handleOpenLink} 
+            <Button
+              variant="blue"
+              size="icon"
+              onClick={handleOpenLink}
               title={t('common.openLink')}
               aria-label={t('common.openLink')}
             >
               <Link2 className="w-4 h-4" />
             </Button>
           )}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => onEdit(job)} 
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(job)}
             title={t('common.updateHunt')}
             aria-label={t('common.updateHunt')}
           >
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button 
-            variant="danger" 
-            size="icon" 
-            onClick={() => onDelete(job.id)} 
+          <Button
+            variant="danger"
+            size="icon"
+            onClick={() => onDelete(job.id)}
             title={t('common.deleteJob')}
             aria-label={t('common.deleteJob')}
           >
@@ -119,12 +113,14 @@ export const JobCard = memo(({ job, compact, onEdit, onDelete, onStatusChange }:
         {!compact && (
           <>
             <div className="flex-1" />
-            <select 
-              value={job.status} 
+            <select
+              value={job.status}
               onChange={(e) => onStatusChange(job.id, e.target.value as JobStatus)}
               className="bg-zinc-800/50 text-[10px] font-bold border-none rounded-lg px-2.5 py-1.5 text-zinc-400 focus:ring-1 focus:ring-zinc-700 outline-none cursor-pointer hover:text-white transition-all"
             >
-              {statusOptions}
+              {JOB_STATUSES.map(s => (
+                <option key={s} value={s}>{getStatusLabel(s, t)}</option>
+              ))}
             </select>
           </>
         )}
